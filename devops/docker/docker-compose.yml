@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+  redis:
+    extends:
+      file: docker/db/redis/service.yml
+      service: redis
+  postgre:
+    extends:
+      file: docker/db/postgre/service.yml
+      service: postgre
+  mongo:
+    extends:
+      file: docker/db/mongo/service.yml
+      service: mongo
+  weaviate:
+    extends:
+      file: docker/db/weaviate/service.yml
+      service: weaviate
+  chatbotapi:
+    extends:
+      file: docker/app/chatbotapi/service.yml
+      service: chatbotapi
+    networks:
+      - backend
+    tty: true
+    depends_on:
+      - db
+
+networks:
+  backend:
+    driver: 'bridge'

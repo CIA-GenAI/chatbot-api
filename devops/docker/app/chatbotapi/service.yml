@@ -1,0 +1,14 @@
+service:
+  chatbotapi:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: api
+    hostname: api
+    ports:
+      - '8000:8000'
+    volumes:
+      - $PWD:/home
+
+
+
