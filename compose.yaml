@@ -1,0 +1,108 @@
+version: '3.7'
+
+services:
+#####################
+# TchatBot service  #
+#####################
+  api:
+    build:
+      context: .
+      target: builder
+    container_name: chatbot-application
+    environment:
+      PORT: ${APP_PORT}
+    ports:
+      - '8000:8000'
+    depends_on:
+      - mongo
+      - postgre
+      - redis
+      - weaviate
+    tty: true
+    restart: "no"
+    networks:
+      - backend
+      - frontend
+#####################
+# Redis service     #
+#####################    
+  redis:
+    container_name: redis
+    image: redis
+    networks:
+      - backend
+#####################
+# Postgres service  #
+#####################
+  postgre:
+    container_name: postgres
+    image: postgres:16.0
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/pgdata
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PWD}
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_PORT: ${PG_PORT}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    restart: always
+    networks:
+      - backend
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_MAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PW}
+    ports:
+      - "5050:80"
+    restart: always
+    networks:
+      - backend
+      - frontend
+#####################
+# MongoDb service   #
+#####################
+  mongo:
+    container_name: mongo
+    image: mongo
+    volumes:
+      - mongodbdata:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DOCUMENTS_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DOCUMENTS_PWD}
+      MONGO_INITDB_DATABASE: ${DOCUMENTS_DB}
+      MONGODB_DATA_DIR: /data/db
+    restart: always
+    networks:
+      - backend
+#####################
+# Weaviate service  #
+#####################    
+  weaviate:
+    image: semitechnologies/weaviate
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'none'
+      CLUSTER_HOSTNAME: 'node1'
+    networks:
+      - backend
+#####################
+# Networks          #
+#####################
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+#####################
+# Volumes           #
+#####################
+volumes:
+  weaviate_data:
+  mongodbdata:
+  postgres_data:
